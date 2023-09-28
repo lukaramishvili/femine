@@ -1,0 +1,9 @@
+[submodule "libfmsynth"]
+	path = libfmsynth
+	url = https://github.com/Themaister/libfmsynth
+[submodule "libDaisy"]
+	path = libDaisy
+	url = https://github.com/electro-smith/libDaisy
+[submodule "DaisySP"]
+	path = DaisySP
+	url = https://github.com/electro-smith/DaisySP
