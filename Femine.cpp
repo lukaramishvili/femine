@@ -1,6 +1,5 @@
-// #include "fmsynth.peg"
-// #include "fmsynth.h"
-// #include "fmsynth_private.h"
+#include "./libfmsynth/include/fmsynth.h"
+#include "./libfmsynth/include/fmsynth_private.h"
 
 #include "daisy_versio.h"
 #include "daisysp.h"
