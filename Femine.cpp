@@ -16,6 +16,10 @@ Decimator decimator_r;
 
 static float kval;
 
+fmsynth_t *fm;
+int FM_SAMPLE_RATE = 44100;
+int FM_MAX_VOICES = 128;
+
 // This runs at a fixed rate, to prepare audio samples
 void callback(AudioHandle::InterleavingInputBuffer in,
               AudioHandle::InterleavingOutputBuffer out,
@@ -44,6 +48,18 @@ int main(void)
 
     hw.StartAudio(callback);
     hw.StartAdc();
+
+    // Initialize FM synth engine
+    fm = fmsynth_new(FM_SAMPLE_RATE, FM_MAX_VOICES);
+
+    if (fm == nullptr)
+    {
+        // signal error with LED signals: OFF RED OFF RED
+        hw.SetLed(DaisyVersio::LED_0, 0, 0, 0);
+        hw.SetLed(DaisyVersio::LED_1, 255, 0, 0);
+        hw.SetLed(DaisyVersio::LED_2, 0, 0, 0);
+        hw.SetLed(DaisyVersio::LED_3, 255, 0, 0);
+    }
 
     while (1)
     {
