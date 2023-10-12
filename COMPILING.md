@@ -1,12 +1,12 @@
-# Decimator
+# Femine (FM Synth)
 
-# Setup development environment
+## Setup development environment
 
 1. git clone https://github.com/electro-smith/libDaisy
 2. git clone git clone https://github.com/electro-smith/DaisySP
 3. brew install armmbed/formulae/arm-none-eabi-gcc
 
-# Build
+## Build
 
 - `$(cd libDaisy && make)`
 - `$(cd DaisySP && make)`

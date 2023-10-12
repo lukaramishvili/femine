@@ -1,6 +1,6 @@
 # Femine (FM Synth)
 
-# Compilation, source, development machine setup
+## Compilation, source, development machine setup
 
 see [./COMPILING.md](./COMPILING.md)
 
