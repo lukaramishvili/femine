@@ -1,4 +1,4 @@
-# Decimator
+# Femine (FM Synth)
 
 # Compilation, source, development machine setup
 
