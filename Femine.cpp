@@ -84,8 +84,10 @@ void callback( // AudioHandle::InterleavingInputBuffer in,
     /**/
 
     // https://en.cppreference.com/w/cpp/string/byte/memset
-    std::memset(OUT_L, 0, FM_SAMPLE_RATE * sizeof(float));
-    std::memset(OUT_R, 0, FM_SAMPLE_RATE * sizeof(float));
+    // std::memset(OUT_L, 0, FM_SAMPLE_RATE * sizeof(float));
+    // std::memset(OUT_R, 0, FM_SAMPLE_RATE * sizeof(float));
+    std::memset(OUT_L, 0, size);
+    std::memset(OUT_R, 0, size);
 
     // one-liner
     // Parameters
@@ -94,7 +96,15 @@ void callback( // AudioHandle::InterleavingInputBuffer in,
     // right	A pointer to buffer representing the right channel.
     // frames	The number of frames (left and right samples) to render.
     // ./libfmsynth/docs/html/group__libfmsynthRender.html
-    fmsynth_render(fm, OUT_L, OUT_R, size);
+    //
+    // fmsynth_render(fm, OUT_L, OUT_R, size);
+
+    // to quickly test `callback`, leave just this code that does audio pass-through
+    for (size_t i = 0; i < size; i++)
+    {
+        OUT_L[i] = IN_L[i];
+        OUT_R[i] = IN_L[i];
+    }
 }
 
 /**
@@ -108,6 +118,8 @@ int main(void)
 {
     // Initialize Versio hardware and start audio, ADC
     hw.Init();
+
+    hw.seed.PrintLine("hello world");
 
     /**
      * see daisy_versio.cpp for pin numbers
@@ -130,15 +142,16 @@ int main(void)
     basePitch = 0.f;
     finalPitch = 0.f;
 
+    // Initialize FM synth engine
+    // BEFORE callback
+    fm = fmsynth_new(FM_SAMPLE_RATE, FM_MAX_VOICES);
+
     hw.StartAudio(callback);
     hw.StartAdc();
 
     /** Initialize our Gate Input */
     // TODO get correct pin number for e.g. first CV jack
     // gate_in.Init(seed::D11, false);
-
-    // Initialize FM synth engine
-    fm = fmsynth_new(FM_SAMPLE_RATE, FM_MAX_VOICES);
 
     if (fm == nullptr)
     {
@@ -160,6 +173,9 @@ int main(void)
         {
             hw.seed.PrintLine("button pressed");
         }
+
+        // useful tip: smooth CV processing
+        // https://forum.electro-smith.com/t/tips-for-smooth-input-cv-processing/1026/3
 
         // KNOB_0 1 2 3
         // adapted from ./DaisyExamples/patch_sm/SimpleOscillator/SimpleOscillator.cpp

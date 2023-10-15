@@ -30,10 +30,11 @@ All controls have some effect on the LEDs
 | Knob 2  | Bitcrush factor (right)   |
 | Knob 3  | Downsample factor (right) |
 
-| Pin Name | Pin Location | Function        | Comment                          |
-| -------- | ------------ | --------------- | -------------------------------- |
-| CV_1     | C5           | Coarse Tuning   | Sets the pitch of the oscillator |
-| CV_5     | C6           | 1V/Octave Input | Musical pitch tracking input     |
+| Pin Name | Pin Location | Function             | Comment                          |
+| -------- | ------------ | -------------------- | -------------------------------- |
+| KNOB_0   | ? C5         | Coarse Tuning        | Sets the pitch of the oscillator |
+| CV_0     | ? C6         | 1V/Octave Input      | Musical pitch tracking input     |
+| KNOB_1   | ? C5         | Velocity at note hit | Sets the pitch of the oscillator |
 
 ## Demo
 
