@@ -10,8 +10,7 @@ using namespace daisysp;
 
 DaisyVersio hw;
 
-static float basePitch;
-static float finalPitch;
+// static float pitchCV;
 
 fmsynth_t *fm;
 int FM_SAMPLE_RATE = 44100;
@@ -99,12 +98,17 @@ void callback( // AudioHandle::InterleavingInputBuffer in,
     //
     // fmsynth_render(fm, OUT_L, OUT_R, size);
 
-    // to quickly test `callback`, leave just this code that does audio pass-through
+    // to quickly test `callback`:
     for (size_t i = 0; i < size; i++)
     {
+        // this code does empty audio
+        // OUT_L[i] = 0;
+        // OUT_R[i] = 0;
+        // this code does audio pass-through
         OUT_L[i] = IN_L[i];
-        OUT_R[i] = IN_L[i];
+        OUT_R[i] = IN_R[i];
     }
+    fmsynth_render(fm, OUT_L, OUT_R, size);
 }
 
 /**
@@ -139,8 +143,7 @@ int main(void)
     isCalibrated = cal.GetData(scale, offset);
 
     // for example, see DaisyExamples/patch_sm/SimpleOscillator/SimpleOscillator.cpp
-    basePitch = 0.f;
-    finalPitch = 0.f;
+    // pitchCV = 0.f;
 
     // Initialize FM synth engine
     // BEFORE callback
@@ -177,22 +180,41 @@ int main(void)
         // useful tip: smooth CV processing
         // https://forum.electro-smith.com/t/tips-for-smooth-input-cv-processing/1026/3
 
+        // Note: DaisyVersio::KNOB_0 already contains Knob+CV Input values
+        int TOP_LEFT_BLEND_KNOB = DaisyVersio::KNOB_0;
+        int BOTTOM_LEFT_SPEED_KNOB = DaisyVersio::KNOB_1;
+        int TOP_CENTER_TONE_KNOB = DaisyVersio::KNOB_2;
+        int BOTTOM_CENTER_INDEX_KNOB = DaisyVersio::KNOB_3;
+        int TOP_RIGHT_REGEN_KNOB = DaisyVersio::KNOB_4;
+        int CENTER_RIGHT_SIZE_KNOB = DaisyVersio::KNOB_5;
+        int BOTTOM_RIGHT_DENSE_KNOB = DaisyVersio::KNOB_6;
+
         // KNOB_0 1 2 3
         // adapted from ./DaisyExamples/patch_sm/SimpleOscillator/SimpleOscillator.cpp
-        basePitch = hw.GetKnobValue(DaisyVersio::KNOB_0);
-        float velocityCV = hw.GetKnobValue(DaisyVersio::KNOB_1);
+        float blendCV = hw.GetKnobValue(TOP_LEFT_BLEND_KNOB);
+        float speedCV = hw.GetKnobValue(BOTTOM_LEFT_SPEED_KNOB);
+        float toneCV = hw.GetKnobValue(TOP_CENTER_TONE_KNOB);
+        float indexCV = hw.GetKnobValue(BOTTOM_CENTER_INDEX_KNOB);
+        float sizeCV = hw.GetKnobValue(CENTER_RIGHT_SIZE_KNOB);
+        float regenCV = hw.GetKnobValue(TOP_RIGHT_REGEN_KNOB);
+        float denseCV = hw.GetKnobValue(BOTTOM_RIGHT_DENSE_KNOB);
         // TODO check it's the correct pin number for pitch CV input jack
-        float pitchCV = hw.seed.adc.Get(PIN_ADC_CV0.pin);
+        // float pitchCV = hw.seed.adc.Get(PIN_ADC_CV0.pin);
         // `fmap` scales 0..1 float value to provided range
-        float pitchValue = fmap(pitchCV, 0.f, 60.f);
-        finalPitch =
-            basePitch + pitchValue;
-        float midiNote = fclamp(finalPitch, 0.f, 127.f);
-        float midiVelocity = fmap(velocityCV, 0.f, 127.f);
+        // float pitchValue = fmap(pitchCV, 0.f, 60.f);
+        // finalPitch = basePitch + pitchValue;
+        float pitchCV = toneCV;
+        float velocityCV = speedCV;
+        float midiNote = fclamp(fmap(pitchCV, 0.f, 127.f), 0.f, 127.f);
+        float midiVelocity = fclamp(fmap(velocityCV, 0.f, 127.f), 0.f, 127.f);
         float freq = mtof(midiNote);
 
-        fmsynth_set_global_parameter(fm, FMSYNTH_GLOBAL_PARAM_VOLUME, hw.GetKnobValue(DaisyVersio::KNOB_0));
-        fmsynth_set_global_parameter(fm, FMSYNTH_GLOBAL_PARAM_LFO_FREQ, hw.GetKnobValue(DaisyVersio::KNOB_1));
+        fmsynth_set_parameter(fm, FMSYNTH_PARAM_FREQ_MOD, fmap(roundf(regenCV), 0, FM_MAX_VOICES), fmap(sizeCV, 0, 127));
+        // FMSYNTH_PARAM_LFO_FREQ_MOD_DEPTH
+
+        float volume = blendCV < 0.01f ? 0.f : blendCV;
+        fmsynth_set_global_parameter(fm, FMSYNTH_GLOBAL_PARAM_VOLUME, volume);
+        fmsynth_set_global_parameter(fm, FMSYNTH_GLOBAL_PARAM_LFO_FREQ, hw.GetKnobValue(DaisyVersio::KNOB_LAST));
 
         // detect gate on/off and send note on/off
         //
