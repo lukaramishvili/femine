@@ -8,6 +8,12 @@
 using namespace daisy;
 using namespace daisysp;
 
+/**
+ * FM synth. Also passes through any audio output present at IN L/R.
+ * If top left Blend knob is set at minimum, the FM sound gets muted and the module becomes just a stereo mult, passing through
+ * I added this feature so I could leave my Kick Drum => Electus Versio rumble patch intact, and be able to test FM drums while Kick Drum behavior didn't change and was still heard in the mix.
+ */
+
 DaisyVersio hw;
 
 // static float pitchCV;
@@ -212,6 +218,7 @@ int main(void)
         fmsynth_set_parameter(fm, FMSYNTH_PARAM_FREQ_MOD, fmap(roundf(regenCV), 0, FM_MAX_VOICES), fmap(sizeCV, 0, 127));
         // FMSYNTH_PARAM_LFO_FREQ_MOD_DEPTH
 
+        // fix min. volume: lowest knob position was still letting out volume
         float volume = blendCV < 0.01f ? 0.f : blendCV;
         fmsynth_set_global_parameter(fm, FMSYNTH_GLOBAL_PARAM_VOLUME, volume);
         fmsynth_set_global_parameter(fm, FMSYNTH_GLOBAL_PARAM_LFO_FREQ, hw.GetKnobValue(DaisyVersio::KNOB_LAST));
